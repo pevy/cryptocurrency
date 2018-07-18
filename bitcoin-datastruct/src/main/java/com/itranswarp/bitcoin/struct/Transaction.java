@@ -79,12 +79,12 @@ public class Transaction {
 	public byte[] toByteArray() {
 		BitcoinOutput buffer = new BitcoinOutput();
 		buffer.writeInt(this.version).writeVarInt(this.tx_ins.length);
-		for (int i = 0; i < this.tx_ins.length; i++) {
-			buffer.write(tx_ins[i].toByteArray());
+		for (TxIn tx_in : this.tx_ins) {
+			buffer.write(tx_in.toByteArray());
 		}
 		buffer.writeVarInt(this.tx_outs.length);
-		for (int i = 0; i < this.tx_outs.length; i++) {
-			buffer.write(tx_outs[i].toByteArray());
+		for (TxOut tx_out : this.tx_outs) {
+			buffer.write(tx_out.toByteArray());
 		}
 		buffer.writeUnsignedInt(lock_time);
 		return buffer.toByteArray();

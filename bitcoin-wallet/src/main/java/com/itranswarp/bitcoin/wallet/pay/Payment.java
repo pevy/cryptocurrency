@@ -52,12 +52,8 @@ public class Payment {
 		if (payTos.isEmpty()) {
 			throw new IllegalArgumentException("No pay to specified.");
 		}
-		long total_unspend = utxos.stream().mapToLong((utxo) -> {
-			return utxo.amount;
-		}).sum();
-		long total_spend = payTos.stream().mapToLong((pay) -> {
-			return pay.amount;
-		}).sum();
+		long total_unspend = utxos.stream().mapToLong((utxo) -> utxo.amount).sum();
+		long total_spend = payTos.stream().mapToLong((pay) -> pay.amount).sum();
 		if (total_unspend < total_spend) {
 			log.warn("Cannot create transaction for inputs < outputs.");
 			throw new BitcoinException("Cannot create transaction for inputs < outputs.");

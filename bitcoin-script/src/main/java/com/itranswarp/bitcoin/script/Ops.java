@@ -1,8 +1,12 @@
 package com.itranswarp.bitcoin.script;
 
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import com.google.common.reflect.ClassPath;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -28,7 +32,7 @@ public class Ops {
 	static Map<Integer, Op> scanOps() {
 		Map<Integer, Op> map = new HashMap<>();
 		try {
-			for (Class<?> clazz : ClasspathUtils.getClasses(Ops.class.getPackage().getName() + ".op")) {
+			for (Class<?> clazz : getClasses(Ops.class.getPackage().getName() + ".op")) {
 				Op op = (Op) clazz.newInstance();
 				map.put(op.code, op);
 			}
@@ -40,4 +44,8 @@ public class Ops {
 		return map;
 	}
 
+	public static List<Class<?>> getClasses(String packageName) throws IOException {
+		return ClassPath.from(ClasspathUtils.class.getClassLoader()).getTopLevelClasses(packageName).stream()
+				.map((info) -> info.load()).collect(Collectors.toList());
+	}
 }

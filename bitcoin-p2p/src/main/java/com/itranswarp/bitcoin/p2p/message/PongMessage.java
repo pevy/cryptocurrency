@@ -14,7 +14,7 @@ import com.itranswarp.bitcoin.io.BitcoinOutput;
  */
 public class PongMessage extends Message {
 
-	long nonce;
+	private long nonce;
 
 	public PongMessage(long nonce) {
 		super("pong");

@@ -100,6 +100,7 @@ public class BitcoinService implements MessageListener {
     }
 
     private void initBlockData() throws IOException {
+        // SELECT * FROM block ORDER BY height DESC LIMIT 1
         BlockEntity block = blockRepository.findFirstByOrderByHeightDesc();
         if (block == null) {
             // add genesis block:
@@ -180,15 +181,11 @@ public class BitcoinService implements MessageListener {
     }
 
     List<InputBean> toInputBeans(List<OutputEntity> entities) {
-        return entities.stream().map((entity) -> {
-            return new InputBean(entity);
-        }).collect(Collectors.toList());
+        return entities.stream().map(InputBean::new).collect(Collectors.toList());
     }
 
     List<OutputBean> toOutputBeans(List<OutputEntity> entities) {
-        return entities.stream().map((entity) -> {
-            return new OutputBean(entity);
-        }).collect(Collectors.toList());
+        return entities.stream().map(OutputBean::new).collect(Collectors.toList());
     }
 
     /**
@@ -209,7 +206,7 @@ public class BitcoinService implements MessageListener {
         }
     }
 
-    public void processBlockFromPeer(Block block) {
+    private void processBlockFromPeer(Block block) {
         final String hash = HashUtils.toHexStringAsLittleEndian(block.getBlockHash());
         log.info("process block " + hash + " from peer...");
         lock.lock();
@@ -223,8 +220,7 @@ public class BitcoinService implements MessageListener {
             String prevHash = HashUtils.toHexStringAsLittleEndian(block.header.prevHash);
             cache.put(prevHash, block);
             // get last hash:
-            String lastHash = deque.isEmpty() ? this.lastBlockHash
-                    : HashUtils.toHexStringAsLittleEndian(deque.peekLast().getBlockHash());
+            String lastHash = deque.isEmpty() ? this.lastBlockHash : HashUtils.toHexStringAsLittleEndian(deque.peekLast().getBlockHash());
             // try get all to queue:
             while (true) {
                 Block next = cache.remove(lastHash);
@@ -304,8 +300,7 @@ public class BitcoinService implements MessageListener {
         }
         if (msg instanceof VersionMessage) {
             sender.sendMessage(new VerAckMessage());
-            sender.sendMessage(new GetBlocksMessage(HashUtils.toBytesAsLittleEndian(this.lastBlockHash),
-                    BitcoinConstants.ZERO_HASH_BYTES));
+            sender.sendMessage(new GetBlocksMessage(HashUtils.toBytesAsLittleEndian(this.lastBlockHash), BitcoinConstants.ZERO_HASH_BYTES));
             return;
         }
         if (msg instanceof InvMessage) {
@@ -325,5 +320,4 @@ public class BitcoinService implements MessageListener {
             processBlockFromPeer(blockMsg.block);
         }
     }
-
 }
